@@ -1,4 +1,4 @@
-import { Job, Appointment, JobType, JobStatus } from '@/types/customer';
+import { Job, Appointment, JobType, JobStatus, Customer } from '@/types/customer';
 
 // Utility to generate a date string directly in EST
 function createDateInEST(year: number, month: number, day: number, hour: number, minute: number): string {
@@ -28,10 +28,89 @@ function getRandomTimeWithinDay(existingTimes: Set<number>, workingHoursStart = 
   return randomHour;
 }
 
-// Generate mock data
+// Helper function to generate a random string
+function generateRandomString(length: number): string {
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += letters.charAt(Math.floor(Math.random() * letters.length));
+  }
+  return result;
+}
+
+// Helper function to generate a random phone number
+function generateRandomPhoneNumber(): string {
+  const areaCode = Math.floor(Math.random() * 900) + 100;
+  const prefix = Math.floor(Math.random() * 900) + 100;
+  const lineNumber = Math.floor(Math.random() * 9000) + 1000;
+  return `${areaCode}-${prefix}-${lineNumber}`;
+}
+
+// Helper function to generate a random street name
+function generateRandomStreetName(): string {
+  const streetNames = [
+    'Main',
+    'Oak',
+    'Pine',
+    'Maple',
+    'Cedar',
+    'Elm',
+    'Washington',
+    'Lake',
+    'Hill',
+    'Sunset',
+  ];
+  return streetNames[Math.floor(Math.random() * streetNames.length)];
+}
+
+// Function to generate 26 customers with names starting from A to Z
+function generateMockCustomers(): Customer[] {
+  const customers: Customer[] = [];
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  const lastNames = [
+    'Smith',
+    'Johnson',
+    'Williams',
+    'Brown',
+    'Jones',
+    'Garcia',
+    'Miller',
+    'Davis',
+    'Rodriguez',
+    'Martinez',
+  ];
+  const domains = ['example.com', 'mail.com', 'test.com'];
+
+  for (let i = 0; i < alphabet.length; i++) {
+    const letter = alphabet[i];
+    // Generate a first name starting with the letter
+    const firstName = `${letter}${generateRandomString(4)}`;
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const id = `customer_${i}`;
+    const name = `${firstName} ${lastName}`;
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${domains[Math.floor(Math.random() * domains.length)]
+      }`;
+    const phone = generateRandomPhoneNumber();
+    const address = `${Math.floor(Math.random() * 9999) + 1} ${generateRandomStreetName()} St.`;
+
+    customers.push({
+      id,
+      name,
+      email,
+      phone,
+      address,
+    });
+  }
+  return customers;
+}
+
+// Update the generateMockData function to include customers
 export function generateMockData() {
   const today = new Date();
   const now = new Date();
+
+  const customers = generateMockCustomers();
 
   const jobs: Job[] = [];
   const appointments: Appointment[] = [];
@@ -52,13 +131,28 @@ export function generateMockData() {
       const hour = getRandomTimeWithinDay(usedTimes);
       const minute = 0;
 
-      const scheduledStart = createDateInEST(currentDay.getFullYear(), currentDay.getMonth() + 1, currentDay.getDate(), hour, minute);
-      const scheduledEnd = createDateInEST(currentDay.getFullYear(), currentDay.getMonth() + 1, currentDay.getDate(), hour + 1, minute);
+      const scheduledStart = createDateInEST(
+        currentDay.getFullYear(),
+        currentDay.getMonth() + 1,
+        currentDay.getDate(),
+        hour,
+        minute
+      );
+      const scheduledEnd = createDateInEST(
+        currentDay.getFullYear(),
+        currentDay.getMonth() + 1,
+        currentDay.getDate(),
+        hour + 1,
+        minute
+      );
+
+      // Randomly select a customer from the generated customers
+      const customer = customers[Math.floor(Math.random() * customers.length)];
 
       // Create job
       const newJob: Job = {
         id: `job_${i}_${j}`,
-        customer_id: `customer_${i}_${j}`,
+        customer_id: customer.id,
         jobType,
         status: JobStatus.SCHEDULED,
         scheduled_start: scheduledStart,
@@ -79,7 +173,7 @@ export function generateMockData() {
         scheduled_start: newJob.scheduled_start,
         scheduled_end: newJob.scheduled_end,
         duration: newJob.duration,
-        location: `Mock location ${i}_${j}`,
+        location: customer.address,
         assigned_technician: employeeId,
         status: newJob.status,
         arrival_window_minutes: 10,
@@ -90,5 +184,5 @@ export function generateMockData() {
     }
   }
 
-  return { employees, jobs, appointments };
+  return { employees, customers, jobs, appointments };
 }

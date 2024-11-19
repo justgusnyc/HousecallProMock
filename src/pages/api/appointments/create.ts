@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { v4 as uuidv4 } from 'uuid';
-import { getAppointments, refreshMockDataIfStale, saveAppointments } from '../../../../lib/mockDataCache';
+import { getAppointments, saveAppointments } from '../../../../lib/mockDataCache';
 import { Appointment, JobStatus, JobType } from '@/types/customer';
 
-refreshMockDataIfStale();
+// refreshMockDataIfStale();
 
 // Helper function to parse a date string and return a Date object in EST
 function parseDateToEST(dateString: string): Date {
