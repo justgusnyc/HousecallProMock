@@ -13,8 +13,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     // Parse and convert the start and end times to UTC
-    const requestedStart = DateTime.fromISO(scheduled_start, { zone: 'America/New_York' }).toUTC();
-    const requestedEnd = DateTime.fromISO(scheduled_end, { zone: 'America/New_York' }).toUTC();
+    const requestedStart = DateTime.fromISO(scheduled_start).toUTC();
+    const requestedEnd = DateTime.fromISO(scheduled_end).toUTC();    
 
     if (!requestedStart.isValid || !requestedEnd.isValid) {
       return res.status(400).json({ success: false, message: 'Invalid date format' });
@@ -74,6 +74,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // Persist the updated jobs list to the file system
     saveJobs(jobs);
+    console.log("jobs: ", jobs);
 
     res.status(201).json({ success: true, job: newJob });
   } else {

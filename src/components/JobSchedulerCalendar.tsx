@@ -20,16 +20,16 @@ const JobSchedulerCalendar: React.FC<JobSchedulerCalendarProps> = ({
   const preComputedWeekDays = useMemo(() => {
     const today = DateTime.now().setZone('America/New_York').startOf('day');
     return Array.from({ length: 7 }, (_, i) => today.plus({ days: i + 1 }).toISODate()!)
-      .filter(Boolean); // Ensure no null values
+      .filter(Boolean);
   }, []);
-  
 
   const [weekDays, setWeekDays] = useState<string[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
 
   useEffect(() => {
+    console.log('Unavailable slots:', unavailableSlots);
     setWeekDays(preComputedWeekDays);
-  }, [preComputedWeekDays]);
+  }, [preComputedWeekDays, unavailableSlots]);
 
   const isUnavailable = (date: string, time: string) =>
     unavailableSlots[date]?.includes(time);
@@ -50,7 +50,8 @@ const JobSchedulerCalendar: React.FC<JobSchedulerCalendarProps> = ({
           key={day}
           className="text-sm font-semibold text-center border-b border-gray-300 pb-1 text-black"
         >
-          {DateTime.fromISO(day).toFormat('EEE, MMM d')}
+          {/* Updated Line: Set the timezone and format */}
+          {DateTime.fromISO(day).setZone('America/New_York').toFormat('EEE, MMM d')}
         </div>
       ))}
 

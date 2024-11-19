@@ -120,8 +120,10 @@ export function generateMockData() {
       // Randomize the time slot for the job
       const hour = getRandomTimeWithinDay(usedTimes);
 
+      // When generating scheduled_start and scheduled_end
       const scheduledStart = currentDay.set({ hour, minute: 0 }).toUTC().toISO();
       const scheduledEnd = currentDay.set({ hour: hour + 1, minute: 0 }).toUTC().toISO();
+
 
       // Randomly select a customer from the generated customers
       const customer = customers[Math.floor(Math.random() * customers.length)];

@@ -36,6 +36,7 @@ export default function JobScheduler({
       const data = await res.json();
       if (data.success) {
         setUnavailableSlots(data.unavailable_slots || {});
+        console.log("unavailable slots: ", data.unavailable_slots);
       } else {
         console.error('API Error:', data.message);
       }
@@ -52,46 +53,40 @@ export default function JobScheduler({
 
   const createJobAndAppointment = async () => {
     if (selectedDate && selectedTime && jobType && selectedCustomer) {
-      const startDateTime = DateTime.fromISO(`${selectedDate}T${selectedTime}`, {
-        zone: 'America/New_York',
-      });
+      const startDateTime = DateTime.fromISO(`${selectedDate}T${selectedTime}`, { zone: 'America/New_York' });
       const endDateTime = startDateTime.plus({ hours: 1 });
-
+  
       try {
         const jobRes = await fetch('/api/jobs/create', {
           method: 'POST',
           body: JSON.stringify({
             customer_id: selectedCustomer.id,
-            scheduled_start: startDateTime.toISO(),
-            scheduled_end: endDateTime.toISO(),
+            scheduled_start: startDateTime.toISO({ includeOffset: true }),
+            scheduled_end: endDateTime.toISO({ includeOffset: true }),
             job_type: jobType,
             duration: 60,
             notes,
           }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
-
+  
         const jobData = await jobRes.json();
         setBookedJob(jobData.job);
-
+  
         if (jobData && jobData.job) {
           await fetch('/api/appointments/create', {
             method: 'POST',
             body: JSON.stringify({
               job_id: jobData.job.id,
               customer_id: selectedCustomer.id,
-              scheduled_start: startDateTime.toISO(),
-              scheduled_end: endDateTime.toISO(),
+              scheduled_start: startDateTime.toISO({ includeOffset: true }),
+              scheduled_end: endDateTime.toISO({ includeOffset: true }),
               location: selectedCustomer.address,
               jobType,
             }),
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
           });
-
+  
           onScheduleJob({ date: selectedDate, time: selectedTime });
         } else {
           addToast('Unable to schedule job.', 'error');
@@ -101,6 +96,8 @@ export default function JobScheduler({
       }
     }
   };
+  
+  
 
   const handleSlotSelect = ({ date, time }: { date: string; time: string }) => {
     setSelectedDate(date);

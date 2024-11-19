@@ -10,9 +10,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ success: false, message: 'Missing required query parameters' });
   }
 
-  // Parse the start and end times into UTC
-  const requestedStart = DateTime.fromISO(start as string, { zone: 'America/New_York' }).toUTC();
-  const requestedEnd = DateTime.fromISO(end as string, { zone: 'America/New_York' }).toUTC();
+  // Parse start and end times with the correct time zone
+  const requestedStart = DateTime.fromISO(start as string, { setZone: true });
+  const requestedEnd = DateTime.fromISO(end as string, { setZone: true });
 
   if (!requestedStart.isValid || !requestedEnd.isValid) {
     return res.status(400).json({ success: false, message: 'Invalid date format' });
@@ -40,25 +40,29 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     currentDate <= requestedEnd.startOf('day');
     currentDate = currentDate.plus({ days: 1 })
   ) {
-    const dayKey = currentDate.toISODate(); // Format as YYYY-MM-DD
+    const dayKey = currentDate.toISODate(); // 'YYYY-MM-DD' in the user's time zone
     unavailableSlotsByDate[dayKey] = [];
 
     // Generate hourly slots for the day
     for (let hour = workingHoursStart; hour < workingHoursEnd; hour++) {
-      const slotStart = currentDate.set({ hour, minute: 0, second: 0 }).toUTC();
-      const slotEnd = slotStart.plus({ hours: 1 }); // Slot end is 1 hour after slot start
+      const slotStart = currentDate.set({ hour, minute: 0, second: 0 });
+      const slotEnd = slotStart.plus({ hours: 1 });
+
+      // Convert slot times to UTC for comparison
+      const slotStartUTC = slotStart.toUTC();
+      const slotEndUTC = slotEnd.toUTC();
 
       // Check if any booking overlaps with the slot
       const isUnavailable = relevantBookings.some((booking) => {
-        const bookingStart = DateTime.fromISO(booking.scheduled_start).toUTC();
-        const bookingEnd = DateTime.fromISO(booking.scheduled_end).toUTC();
+        const bookingStartUTC = DateTime.fromISO(booking.scheduled_start).toUTC();
+        const bookingEndUTC = DateTime.fromISO(booking.scheduled_end).toUTC();
 
-        return bookingStart < slotEnd && bookingEnd > slotStart;
+        return bookingStartUTC < slotEndUTC && bookingEndUTC > slotStartUTC;
       });
 
       // If slot is unavailable, add it to the list for the day
       if (isUnavailable) {
-        unavailableSlotsByDate[dayKey].push(slotStart.toFormat('HH:mm')); // "HH:mm" format
+        unavailableSlotsByDate[dayKey].push(slotStart.toFormat('HH:mm')); // Time in user's time zone
       }
     }
   }

@@ -9,8 +9,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const { job_id, customer_id, scheduled_start, scheduled_end, location, jobType } = req.body;
 
     // Parse and convert the start and end times to UTC
-    const requestedStart = DateTime.fromISO(scheduled_start, { zone: 'America/New_York' }).toUTC();
-    const requestedEnd = DateTime.fromISO(scheduled_end, { zone: 'America/New_York' }).toUTC();
+    const requestedStart = DateTime.fromISO(scheduled_start).toUTC();
+    const requestedEnd = DateTime.fromISO(scheduled_end).toUTC();
+
 
     if (!requestedStart.isValid || !requestedEnd.isValid) {
       return res.status(400).json({ success: false, message: 'Invalid date format' });
