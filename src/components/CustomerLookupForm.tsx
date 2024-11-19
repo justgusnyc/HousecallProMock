@@ -182,6 +182,7 @@ export default function CustomerLookupForm({
             setJobScheduled(false);
             setBookedJob(null);
             setErrors({ name: '', phone: '', address: '', email: '' });
+            setSelectedCustomer(null);
           }}
           className="w-full bg-red-400 hover:bg-red-500 text-white py-2 rounded shadow-sm"
         >
