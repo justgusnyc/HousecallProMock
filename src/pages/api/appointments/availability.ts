@@ -1,16 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Appointment, Job, JobType } from '@/types/customer';
 import { getJobs, getAppointments } from '../../../../lib/mockDataCache';
-
-// Ensure mock data is up to date
-// refreshMockDataIfStale();
-
-// Helper function to parse a date string and return a Date object in EST by subtracting 5 hours
-function parseDateToEST(dateString: string): Date {
-  const date = new Date(dateString);
-  date.setHours(date.getHours() - 5); // Adjust to EST
-  return date;
-}
+import { DateTime } from 'luxon';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const { start, end, job_type } = req.query;
@@ -19,15 +10,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ success: false, message: 'Missing required query parameters' });
   }
 
-  const requestedStart = parseDateToEST(start as string);
-  const requestedEnd = parseDateToEST(end as string);
-  const jobType = job_type as JobType;
+  // Parse the start and end times into UTC
+  const requestedStart = DateTime.fromISO(start as string, { zone: 'America/New_York' }).toUTC();
+  const requestedEnd = DateTime.fromISO(end as string, { zone: 'America/New_York' }).toUTC();
 
-  if (isNaN(requestedStart.getTime()) || isNaN(requestedEnd.getTime())) {
+  if (!requestedStart.isValid || !requestedEnd.isValid) {
     return res.status(400).json({ success: false, message: 'Invalid date format' });
   }
 
-  // // Read appointments and jobs data
+  const jobType = job_type as JobType;
+
+  // Read appointments and jobs data
   const appointments: Appointment[] = getAppointments();
   const jobs: Job[] = getJobs();
 
@@ -42,32 +35,30 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const workingHoursEnd = 18;
 
   // Loop through each day in the specified range
-  for (let date = new Date(requestedStart); date <= requestedEnd; date.setDate(date.getDate() + 1)) {
-    const day = parseDateToEST(date.toISOString());
-    const dayKey = day.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-
+  for (
+    let currentDate = requestedStart.startOf('day');
+    currentDate <= requestedEnd.startOf('day');
+    currentDate = currentDate.plus({ days: 1 })
+  ) {
+    const dayKey = currentDate.toISODate(); // Format as YYYY-MM-DD
     unavailableSlotsByDate[dayKey] = [];
 
     // Generate hourly slots for the day
     for (let hour = workingHoursStart; hour < workingHoursEnd; hour++) {
-      const slotStart = new Date(day);
-      slotStart.setHours(hour, 0, 0, 0);
-      slotStart.setHours(slotStart.getHours() - 5); // Adjust slotStart to EST
-
-      const slotEnd = new Date(slotStart);
-      slotEnd.setHours(slotEnd.getHours() + 1); // Slot end is 1 hour after slot start
+      const slotStart = currentDate.set({ hour, minute: 0, second: 0 }).toUTC();
+      const slotEnd = slotStart.plus({ hours: 1 }); // Slot end is 1 hour after slot start
 
       // Check if any booking overlaps with the slot
       const isUnavailable = relevantBookings.some((booking) => {
-        const bookingStart = parseDateToEST(booking.scheduled_start);
-        const bookingEnd = parseDateToEST(booking.scheduled_end);
+        const bookingStart = DateTime.fromISO(booking.scheduled_start).toUTC();
+        const bookingEnd = DateTime.fromISO(booking.scheduled_end).toUTC();
 
         return bookingStart < slotEnd && bookingEnd > slotStart;
       });
 
       // If slot is unavailable, add it to the list for the day
       if (isUnavailable) {
-        unavailableSlotsByDate[dayKey].push(slotStart.toISOString().slice(11, 16)); // "HH:mm" format
+        unavailableSlotsByDate[dayKey].push(slotStart.toFormat('HH:mm')); // "HH:mm" format
       }
     }
   }

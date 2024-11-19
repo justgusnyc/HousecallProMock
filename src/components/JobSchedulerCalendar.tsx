@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { format, addDays, startOfDay } from 'date-fns';
+import { DateTime } from 'luxon';
 
 type UnavailableSlots = Record<string, string[]>;
 type OnSelectSlot = (slot: { date: string; time: string }) => void;
@@ -14,16 +14,15 @@ const JobSchedulerCalendar: React.FC<JobSchedulerCalendarProps> = ({
   onSelectSlot,
 }) => {
   const timeSlots = [
-    "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"
+    '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
   ];
 
-  // Memoize precomputed week days
   const preComputedWeekDays = useMemo(() => {
-    const today = startOfDay(new Date());
-    return Array.from({ length: 7 }, (_, i) =>
-      format(addDays(today, i + 1), 'yyyy-MM-dd')
-    );
+    const today = DateTime.now().setZone('America/New_York').startOf('day');
+    return Array.from({ length: 7 }, (_, i) => today.plus({ days: i + 1 }).toISODate()!)
+      .filter(Boolean); // Ensure no null values
   }, []);
+  
 
   const [weekDays, setWeekDays] = useState<string[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
@@ -51,7 +50,7 @@ const JobSchedulerCalendar: React.FC<JobSchedulerCalendarProps> = ({
           key={day}
           className="text-sm font-semibold text-center border-b border-gray-300 pb-1 text-black"
         >
-          {format(new Date(day), 'EEE, MMM d')}
+          {DateTime.fromISO(day).toFormat('EEE, MMM d')}
         </div>
       ))}
 
@@ -71,12 +70,12 @@ const JobSchedulerCalendar: React.FC<JobSchedulerCalendarProps> = ({
                   isSlotUnavailable
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : isSelected
-                    ? 'bg-blue-800 text-white' // Dark blue for the selected slot
+                    ? 'bg-blue-800 text-white'
                     : 'bg-blue-100 hover:bg-blue-300 text-blue-800'
                 }`}
                 onClick={() => handleSlotClick(day, time)}
               >
-                {isSlotUnavailable ? "Booked" : "Available"}
+                {isSlotUnavailable ? 'Booked' : 'Available'}
               </div>
             );
           })}

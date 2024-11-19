@@ -1,5 +1,6 @@
 import { Customer, Job } from '@/types/customer';
 import React, { useState } from 'react';
+import { DateTime } from 'luxon';
 
 type JobInfoDisplayProps = {
   bookedJob: Job | null;
@@ -15,8 +16,10 @@ const JobInfoDisplay: React.FC<JobInfoDisplayProps> = ({
   const [confirmingDelete, setConfirmingDelete] = useState(false); // Tracks delete confirmation
 
   const formatDate = (date: string) => {
-    const dateObj = new Date(date);
-    return dateObj.toLocaleString();
+    // Convert the ISO string to the local timezone (EST for this app)
+    return DateTime.fromISO(date, { zone: 'utc' })
+      .setZone('America/New_York')
+      .toLocaleString(DateTime.DATETIME_MED);
   };
 
   const handleDeleteJob = async () => {
@@ -32,13 +35,11 @@ const JobInfoDisplay: React.FC<JobInfoDisplayProps> = ({
         throw new Error(errorData.message || 'Failed to delete job.');
       }
 
-      // const data = await res.json();
       onJobDeleted(); // Notify parent to refresh the state
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error(error.message);
-      }
-      else {
+      } else {
         console.error('Unknown error:', error);
       }
     } finally {
@@ -69,11 +70,15 @@ const JobInfoDisplay: React.FC<JobInfoDisplayProps> = ({
           </tr>
           <tr className="border-b">
             <td className="font-semibold px-4 py-2">Start Time:</td>
-            <td className="px-4 py-2">{bookedJob?.scheduled_start ? formatDate(bookedJob.scheduled_start) : 'N/A'}</td>
+            <td className="px-4 py-2">
+              {bookedJob?.scheduled_start ? formatDate(bookedJob.scheduled_start) : 'N/A'}
+            </td>
           </tr>
           <tr className="border-b">
             <td className="font-semibold px-4 py-2">End Time:</td>
-            <td className="px-4 py-2">{bookedJob?.scheduled_end ? formatDate(bookedJob?.scheduled_end) : 'N/A'}</td>
+            <td className="px-4 py-2">
+              {bookedJob?.scheduled_end ? formatDate(bookedJob.scheduled_end) : 'N/A'}
+            </td>
           </tr>
           <tr className="border-b">
             <td className="font-semibold px-4 py-2">Location:</td>

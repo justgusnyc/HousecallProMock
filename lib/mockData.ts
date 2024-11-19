@@ -1,10 +1,5 @@
 import { Job, Appointment, JobType, JobStatus, Customer } from '@/types/customer';
-
-// Utility to generate a date string directly in EST
-function createDateInEST(year: number, month: number, day: number, hour: number, minute: number): string {
-  const date = new Date(Date.UTC(year, month - 1, day, hour, minute)); // Create UTC date
-  return date.toISOString().slice(0, 19); // 'YYYY-MM-DDTHH:mm:ss'
-}
+import { DateTime } from 'luxon';
 
 // Employees mapping for specific job types
 const employees = [
@@ -84,13 +79,11 @@ function generateMockCustomers(): Customer[] {
 
   for (let i = 0; i < alphabet.length; i++) {
     const letter = alphabet[i];
-    // Generate a first name starting with the letter
     const firstName = `${letter}${generateRandomString(4)}`;
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const id = `customer_${i}`;
     const name = `${firstName} ${lastName}`;
-    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${domains[Math.floor(Math.random() * domains.length)]
-      }`;
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${domains[Math.floor(Math.random() * domains.length)]}`;
     const phone = generateRandomPhoneNumber();
     const address = `${Math.floor(Math.random() * 9999) + 1} ${generateRandomStreetName()} St.`;
 
@@ -107,17 +100,14 @@ function generateMockCustomers(): Customer[] {
 
 // Update the generateMockData function to include customers
 export function generateMockData() {
-  const today = new Date();
-  const now = new Date();
-
+  const today = DateTime.now().setZone('America/New_York');
   const customers = generateMockCustomers();
 
   const jobs: Job[] = [];
   const appointments: Appointment[] = [];
 
   for (let i = 1; i <= 7; i++) {
-    const currentDay = new Date(today);
-    currentDay.setDate(today.getDate() + i);
+    const currentDay = today.plus({ days: i });
 
     // Generate 3 jobs per day with random times and assigned employees
     const jobTypes = [JobType.ELECTRICAL, JobType.HVAC, JobType.PLUMBING];
@@ -129,22 +119,9 @@ export function generateMockData() {
 
       // Randomize the time slot for the job
       const hour = getRandomTimeWithinDay(usedTimes);
-      const minute = 0;
 
-      const scheduledStart = createDateInEST(
-        currentDay.getFullYear(),
-        currentDay.getMonth() + 1,
-        currentDay.getDate(),
-        hour,
-        minute
-      );
-      const scheduledEnd = createDateInEST(
-        currentDay.getFullYear(),
-        currentDay.getMonth() + 1,
-        currentDay.getDate(),
-        hour + 1,
-        minute
-      );
+      const scheduledStart = currentDay.set({ hour, minute: 0 }).toUTC().toISO();
+      const scheduledEnd = currentDay.set({ hour: hour + 1, minute: 0 }).toUTC().toISO();
 
       // Randomly select a customer from the generated customers
       const customer = customers[Math.floor(Math.random() * customers.length)];
@@ -155,13 +132,13 @@ export function generateMockData() {
         customer_id: customer.id,
         jobType,
         status: JobStatus.SCHEDULED,
-        scheduled_start: scheduledStart,
-        scheduled_end: scheduledEnd,
+        scheduled_start: scheduledStart!,
+        scheduled_end: scheduledEnd!,
         duration: 60,
         notes: `Mock notes for ${jobType}`,
         assigned_employees: [employeeId],
-        created_at: now.toISOString(),
-        updated_at: now.toISOString(),
+        created_at: DateTime.now().toUTC().toISO(),
+        updated_at: DateTime.now().toUTC().toISO(),
       };
 
       // Create corresponding appointment

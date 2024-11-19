@@ -1,13 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getJobs, saveJobs, getAppointments } from '../../../../lib/mockDataCache';
 import { Job, JobStatus, JobType, Appointment } from '@/types/customer';
-
-// refreshMockDataIfStale();
-
-// Helper function to parse a date string and return a Date object in EST
-function parseDateToEST(dateString: string): Date {
-  return new Date(new Date(dateString).toLocaleString('en-US', { timeZone: 'America/New_York' }));
-}
+import { DateTime } from 'luxon';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -18,10 +12,11 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
-    const requestedStart = parseDateToEST(scheduled_start);
-    const requestedEnd = parseDateToEST(scheduled_end);
+    // Parse and convert the start and end times to UTC
+    const requestedStart = DateTime.fromISO(scheduled_start, { zone: 'America/New_York' }).toUTC();
+    const requestedEnd = DateTime.fromISO(scheduled_end, { zone: 'America/New_York' }).toUTC();
 
-    if (isNaN(requestedStart.getTime()) || isNaN(requestedEnd.getTime())) {
+    if (!requestedStart.isValid || !requestedEnd.isValid) {
       return res.status(400).json({ success: false, message: 'Invalid date format' });
     }
 
@@ -31,13 +26,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // Check availability by ensuring no overlap with existing bookings
     const allBookings = [...appointments, ...jobs];
-    // Check availability by filtering bookings for the same job type and ensuring no overlap
     const isAvailable = allBookings
       .filter((booking) => booking.jobType === job_type) // Only consider bookings of the same job_type
       .every((booking) => {
-        const bookingStart = new Date(booking.scheduled_start).getTime();
-        const bookingEnd = new Date(booking.scheduled_end).getTime();
-        return bookingStart >= requestedEnd.getTime() || bookingEnd <= requestedStart.getTime();
+        const bookingStart = DateTime.fromISO(booking.scheduled_start).toUTC().toMillis();
+        const bookingEnd = DateTime.fromISO(booking.scheduled_end).toUTC().toMillis();
+        return bookingStart >= requestedEnd.toMillis() || bookingEnd <= requestedStart.toMillis();
       });
 
     if (!isAvailable) {
@@ -66,12 +60,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       customer_id,
       jobType: job_type,
       status: JobStatus.SCHEDULED,
-      scheduled_start: requestedStart.toISOString(),
-      scheduled_end: requestedEnd.toISOString(),
+      scheduled_start: requestedStart.toISO(), // Store in ISO format
+      scheduled_end: requestedEnd.toISO(),
       duration,
       notes,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: DateTime.now().toUTC().toISO(),
+      updated_at: DateTime.now().toUTC().toISO(),
       assigned_employees: [employeeId],
     };
 

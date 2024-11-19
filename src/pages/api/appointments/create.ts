@@ -2,20 +2,19 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { v4 as uuidv4 } from 'uuid';
 import { getAppointments, saveAppointments } from '../../../../lib/mockDataCache';
 import { Appointment, JobStatus, JobType } from '@/types/customer';
-
-// refreshMockDataIfStale();
-
-// Helper function to parse a date string and return a Date object in EST
-function parseDateToEST(dateString: string): Date {
-  return new Date(new Date(dateString).toLocaleString('en-US', { timeZone: 'America/New_York' }));
-}
+import { DateTime } from 'luxon';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const { job_id, customer_id, scheduled_start, scheduled_end, location, jobType } = req.body;
 
-    const requestedStart = parseDateToEST(scheduled_start);
-    const requestedEnd = parseDateToEST(scheduled_end);
+    // Parse and convert the start and end times to UTC
+    const requestedStart = DateTime.fromISO(scheduled_start, { zone: 'America/New_York' }).toUTC();
+    const requestedEnd = DateTime.fromISO(scheduled_end, { zone: 'America/New_York' }).toUTC();
+
+    if (!requestedStart.isValid || !requestedEnd.isValid) {
+      return res.status(400).json({ success: false, message: 'Invalid date format' });
+    }
 
     // Fetch the mock data
     const appointments: Appointment[] = getAppointments();
@@ -42,9 +41,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       job_id,
       jobType,
       customer_id,
-      scheduled_start: requestedStart.toISOString(),
-      scheduled_end: requestedEnd.toISOString(),
-      duration: (requestedEnd.getTime() - requestedStart.getTime()) / (1000 * 60), // Duration in minutes
+      scheduled_start: requestedStart.toISO(), // Store as UTC ISO string
+      scheduled_end: requestedEnd.toISO(),
+      duration: (requestedEnd.toMillis() - requestedStart.toMillis()) / (1000 * 60), // Duration in minutes
       location,
       assigned_technician: employeeId,
       status: JobStatus.SCHEDULED,

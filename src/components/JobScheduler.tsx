@@ -2,6 +2,7 @@ import { Customer, Job, JobType } from '@/types/customer';
 import { useEffect, useState } from 'react';
 import { useToast } from './toast/ToastContext';
 import JobSchedulerCalendar from './JobSchedulerCalendar';
+import { DateTime } from 'luxon';
 
 interface JobSchedulerProps {
   onScheduleJob: (jobDetails: { date: string; time: string }) => void;
@@ -22,29 +23,24 @@ export default function JobScheduler({
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
 
-
-
   const checkAvailability = async () => {
-    const today = new Date();
-    const startOfRange = new Date(today);
-    startOfRange.setDate(today.getDate() + 1);
-
-    const endOfRange = new Date(today);
-    endOfRange.setDate(today.getDate() + 8);
+    const today = DateTime.now().setZone('America/New_York');
+    const startOfRange = today.plus({ days: 1 });
+    const endOfRange = today.plus({ days: 8 });
 
     try {
       const res = await fetch(
-        `/api/appointments/availability?start=${startOfRange.toISOString()}&end=${endOfRange.toISOString()}&job_type=${jobType}`
+        `/api/appointments/availability?start=${startOfRange.toISO()}&end=${endOfRange.toISO()}&job_type=${jobType}`
       );
 
       const data = await res.json();
       if (data.success) {
         setUnavailableSlots(data.unavailable_slots || {});
       } else {
-        console.error("API Error:", data.message);
+        console.error('API Error:', data.message);
       }
     } catch (err) {
-      console.error("Error fetching availability:", err);
+      console.error('Error fetching availability:', err);
     }
   };
 
@@ -56,17 +52,18 @@ export default function JobScheduler({
 
   const createJobAndAppointment = async () => {
     if (selectedDate && selectedTime && jobType && selectedCustomer) {
-      const startDateTime = new Date(`${selectedDate}T${selectedTime}`);
-      const endDateTime = new Date(startDateTime);
-      endDateTime.setHours(startDateTime.getHours() + 1);
+      const startDateTime = DateTime.fromISO(`${selectedDate}T${selectedTime}`, {
+        zone: 'America/New_York',
+      });
+      const endDateTime = startDateTime.plus({ hours: 1 });
 
       try {
         const jobRes = await fetch('/api/jobs/create', {
           method: 'POST',
           body: JSON.stringify({
             customer_id: selectedCustomer.id,
-            scheduled_start: startDateTime.toISOString(),
-            scheduled_end: endDateTime.toISOString(),
+            scheduled_start: startDateTime.toISO(),
+            scheduled_end: endDateTime.toISO(),
             job_type: jobType,
             duration: 60,
             notes,
@@ -85,8 +82,8 @@ export default function JobScheduler({
             body: JSON.stringify({
               job_id: jobData.job.id,
               customer_id: selectedCustomer.id,
-              scheduled_start: startDateTime.toISOString(),
-              scheduled_end: endDateTime.toISOString(),
+              scheduled_start: startDateTime.toISO(),
+              scheduled_end: endDateTime.toISO(),
               location: selectedCustomer.address,
               jobType,
             }),
@@ -95,13 +92,12 @@ export default function JobScheduler({
             },
           });
 
-          // const appointmentData = await appointmentRes.json();
           onScheduleJob({ date: selectedDate, time: selectedTime });
         } else {
-          addToast("Unable to schedule job.", 'error');
+          addToast('Unable to schedule job.', 'error');
         }
       } catch (err) {
-        console.error("Error scheduling job:", err);
+        console.error('Error scheduling job:', err);
       }
     }
   };
