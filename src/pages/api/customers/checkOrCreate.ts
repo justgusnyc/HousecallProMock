@@ -10,7 +10,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const { name, phone, address, email } = req.body;
 
     const customers = getCustomers();
-    let existingCustomer = customers.find(
+    const existingCustomer = customers.find(
       (customer) => customer.email.toLowerCase() === email.toLowerCase()
     );
 
