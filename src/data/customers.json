@@ -1,0 +1,86 @@
+[
+  {
+    "id": "1",
+    "name": "Jane Doe",
+    "phone": "555-1237",
+    "address": "123 Elm Street",
+    "email": "jane.doe@example.com"
+  },
+  {
+    "id": "2",
+    "name": "John Smith",
+    "phone": "555-5678",
+    "address": "456 Oak Avenue",
+    "email": "john.smith@example.com"
+  },
+  {
+    "id": "4a0a942d-acb3-4797-acbe-c0b987cc87fe",
+    "name": "gus",
+    "phone": "212-556",
+    "address": "444 E. 92nd St.",
+    "email": "gus@test.com"
+  },
+  {
+    "id": "cf0b784a-8c06-4338-ad2e-2c07df29be93",
+    "name": "Kyra",
+    "phone": "555-1236",
+    "address": "90 E. 23rd St.",
+    "email": "muffin@test.com"
+  },
+  {
+    "id": "a8bc9ead-f42a-4a8e-8894-78f46398be8d",
+    "name": "Henry",
+    "phone": "646756",
+    "address": "123 Main St.",
+    "email": "Henry@test.com"
+  },
+  {
+    "id": "4e87cc6e-4aca-4464-8840-a9284d125955",
+    "name": "Test User1",
+    "phone": "222333",
+    "address": "123 Test Ln.",
+    "email": "test1@test.com"
+  },
+  {
+    "id": "d38a4292-cf23-46a5-803d-4119d595cd06",
+    "name": "Test User2",
+    "phone": "222444",
+    "address": "321 Test Ln.",
+    "email": "test2@test.com"
+  },
+  {
+    "id": "3ff8b983-73c4-4d95-86c0-519853e52c39",
+    "name": "Test User3",
+    "phone": "222555",
+    "address": "456 Test Ln.",
+    "email": "test3@test.com"
+  },
+  {
+    "id": "4fbc396d-7f4a-4eef-858b-dd21baaedb02",
+    "name": "Test User4",
+    "phone": "222666",
+    "address": "789 Test Ln.",
+    "email": "test4@test.com"
+  },
+  {
+    "id": "432c4f8f-0a33-46cf-b684-9117a8e3a281",
+    "name": "Test User5",
+    "phone": "222777",
+    "address": "910 Test Ln.",
+    "email": "test5@test.com"
+  },
+  {
+    "id": "ac07a6cc-7e10-4ec1-8041-14c03d0f073a",
+    "name": "Kevin",
+    "phone": "444-555-6667",
+    "address": "432 Cool Ln. ",
+    "email": "kevin@test.com"
+  },
+  {
+    "id": "d54b2683-b85c-4b1b-996a-7fb2aecb0ad8",
+    "name": "Sam",
+    "phone": "444-555-6666",
+    "address": "123 Wave St.",
+    "email": "sam@test.com"
+  }
+]

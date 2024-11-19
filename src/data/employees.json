@@ -1,0 +1,26 @@
+[
+  {
+    "id": "employee_1",
+    "name": "Alice Johnson",
+    "job_types": [
+      "Electrical Repair"
+    ],
+    "contact": "alice@example.com"
+  },
+  {
+    "id": "employee_2",
+    "name": "Bob Smith",
+    "job_types": [
+      "HVAC Inspection"
+    ],
+    "contact": "bob@example.com"
+  },
+  {
+    "id": "employee_3",
+    "name": "Chris Brown",
+    "job_types": [
+      "Plumbing Maintenance"
+    ],
+    "contact": "chris@example.com"
+  }
+]
