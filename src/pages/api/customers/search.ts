@@ -19,7 +19,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Custom
   try {
     const { email, phone, name, address } = req.query;
 
-    let customers = readCustomers();
+    const customers = readCustomers();
 
     // Normalize and filter based on query params
     const normalizedEmail = email?.toString().trim().toLowerCase();

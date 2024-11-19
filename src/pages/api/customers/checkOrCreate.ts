@@ -22,7 +22,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const { name, phone, address, email } = req.body;
 
-    let customers = readCustomers();
+    const customers = readCustomers();
     const existingCustomer = customers.find((customer) => customer.email.toLowerCase() === email.toLowerCase());
 
     if (existingCustomer) {

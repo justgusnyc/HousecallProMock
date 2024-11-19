@@ -1,11 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 import { Appointment, Job, JobType } from '@/types/customer';
 import { getJobs, getAppointments, refreshMockDataIfStale } from '../../../../lib/mockDataCache';
 
-const appointmentsFilePath = path.join(process.cwd(), 'src/data/appointments.json');
-const jobsFilePath = path.join(process.cwd(), 'src/data/jobs.json');
+// Ensure mock data is up to date
 refreshMockDataIfStale();
 
 // Helper function to parse a date string and return a Date object in EST by subtracting 5 hours
@@ -13,12 +10,6 @@ function parseDateToEST(dateString: string): Date {
   const date = new Date(dateString);
   date.setHours(date.getHours() - 5); // Adjust to EST
   return date;
-}
-
-// Function to read data from JSON files
-function readData<T>(filePath: string): T[] {
-  const data = fs.readFileSync(filePath, 'utf8');
-  return JSON.parse(data) as T[];
 }
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -37,10 +28,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   // // Read appointments and jobs data
-  // const appointments: Appointment[] = readData<Appointment>(appointmentsFilePath);
-  // const jobs: Job[] = readData<Job>(jobsFilePath);
-   // Fetch mock data using the new caching mechanism
-  //  const { appointments, jobs } = getMockData();
   const appointments: Appointment[] = getAppointments();
   const jobs: Job[] = getJobs();
 

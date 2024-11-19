@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useToast } from './toast/ToastContext';
-import { Customer } from '@/types/customer';
+import { Customer, Job } from '@/types/customer';
 
 interface CustomerLookupFormProps {
   setCustomerInfo: (customerInfo: { name?: string; phone?: string; address?: string; email?: string } | null) => void;
@@ -8,7 +8,7 @@ interface CustomerLookupFormProps {
   selectedCustomer: Customer | null;
   setSelectedCustomer: (customer: Customer | null) => void;
   setJobScheduled: (scheduled: boolean) => void;
-  setBookedJob: (job: any) => void;
+  setBookedJob: (job: Job | null) => void;
 }
 
 export default function CustomerLookupForm({
@@ -101,8 +101,12 @@ export default function CustomerLookupForm({
       }
       setCustomerInfo({ name, phone, address, email });
       setSelectedCustomer(data.customer);
-    } catch (error: any) {
-      console.error('Error submitting customer:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error submitting customer:', error.message);
+      } else {
+        console.error('Unknown error:', error);
+      }
     } finally {
       setCustomerSubmitted(true);
       setLoading(false);
@@ -117,9 +121,8 @@ export default function CustomerLookupForm({
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className={`w-full px-4 py-2 border rounded shadow-md ${
-            errors.email ? 'border-red-500' : 'border-gray-400'
-          }`}
+          className={`w-full px-4 py-2 border rounded shadow-md ${errors.email ? 'border-red-500' : 'border-gray-400'
+            }`}
         />
         {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
       </div>
@@ -129,9 +132,8 @@ export default function CustomerLookupForm({
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className={`w-full px-4 py-2 border rounded shadow-md ${
-            errors.name ? 'border-red-500' : 'border-gray-400'
-          }`}
+          className={`w-full px-4 py-2 border rounded shadow-md ${errors.name ? 'border-red-500' : 'border-gray-400'
+            }`}
         />
         {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
       </div>
@@ -141,9 +143,8 @@ export default function CustomerLookupForm({
           placeholder="Phone"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className={`w-full px-4 py-2 border rounded shadow-md ${
-            errors.phone ? 'border-red-500' : 'border-gray-400'
-          }`}
+          className={`w-full px-4 py-2 border rounded shadow-md ${errors.phone ? 'border-red-500' : 'border-gray-400'
+            }`}
         />
         {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
       </div>
@@ -153,9 +154,8 @@ export default function CustomerLookupForm({
           placeholder="Address"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          className={`w-full px-4 py-2 border rounded shadow-md ${
-            errors.address ? 'border-red-500' : 'border-gray-400'
-          }`}
+          className={`w-full px-4 py-2 border rounded shadow-md ${errors.address ? 'border-red-500' : 'border-gray-400'
+            }`}
         />
         {errors.address && <p className="text-red-500 text-sm">{errors.address}</p>}
       </div>

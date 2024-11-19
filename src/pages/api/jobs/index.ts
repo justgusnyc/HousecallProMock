@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
-import { Customer, Job } from '@/types/customer';
+import { Job } from '@/types/customer';
 
 
 const jobsFilePath = path.join(process.cwd(), 'src', 'data', 'jobs.json');

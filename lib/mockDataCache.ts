@@ -47,15 +47,15 @@ export function saveAppointments(appointments: Appointment[]) {
 export function refreshMockDataIfStale() {
   const now = new Date();
 
-  const regenerateIfStale = (
+  const regenerateIfStale = <T>(
     filePath: string,
-    dataGenerator: () => any[],
-    isDataStale: (data: any[]) => boolean
+    dataGenerator: () => T[],
+    isDataStale: (data: T[]) => boolean
   ) => {
     if (fs.existsSync(filePath)) {
       const stats = fs.statSync(filePath);
       const lastModified = new Date(stats.mtime);
-      const existingData = readFile(filePath);
+      const existingData = readFile<T>(filePath);
 
       // Regenerate if the file is older than 7 days or if the data is stale
       if (

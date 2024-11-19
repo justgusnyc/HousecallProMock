@@ -22,11 +22,7 @@ export default function JobScheduler({
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
 
-  useEffect(() => {
-    if (jobType) {
-      checkAvailability();
-    }
-  }, [jobType]);
+
 
   const checkAvailability = async () => {
     const today = new Date();
@@ -51,6 +47,12 @@ export default function JobScheduler({
       console.error("Error fetching availability:", err);
     }
   };
+
+  useEffect(() => {
+    if (jobType) {
+      checkAvailability();
+    }
+  }, [jobType]);
 
   const createJobAndAppointment = async () => {
     if (selectedDate && selectedTime && jobType && selectedCustomer) {
@@ -78,7 +80,7 @@ export default function JobScheduler({
         setBookedJob(jobData.job);
 
         if (jobData && jobData.job) {
-          const appointmentRes = await fetch('/api/appointments/create', {
+          await fetch('/api/appointments/create', {
             method: 'POST',
             body: JSON.stringify({
               job_id: jobData.job.id,
@@ -93,7 +95,7 @@ export default function JobScheduler({
             },
           });
 
-          const appointmentData = await appointmentRes.json();
+          // const appointmentData = await appointmentRes.json();
           onScheduleJob({ date: selectedDate, time: selectedTime });
         } else {
           addToast("Unable to schedule job.", 'error');

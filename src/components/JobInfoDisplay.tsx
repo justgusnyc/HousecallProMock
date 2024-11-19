@@ -32,11 +32,15 @@ const JobInfoDisplay: React.FC<JobInfoDisplayProps> = ({
         throw new Error(errorData.message || 'Failed to delete job.');
       }
 
-      const data = await res.json();
+      // const data = await res.json();
       onJobDeleted(); // Notify parent to refresh the state
-    } catch (error: any) {
-      console.error('Error deleting job:', error);
-      alert(`Error deleting job: ${error.message}`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+      else {
+        console.error('Unknown error:', error);
+      }
     } finally {
       setConfirmingDelete(false); // Reset confirmation state
     }
@@ -100,14 +104,14 @@ const JobInfoDisplay: React.FC<JobInfoDisplayProps> = ({
             </button>
           </>
         ) : (
-            <>
+          <>
             <span className="text-sm text-gray-300 mr-2 self-center">Made a mistake?</span>
-          <button
-            onClick={() => setConfirmingDelete(true)}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Delete Job
-          </button>
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Delete Job
+            </button>
           </>
         )}
       </div>
